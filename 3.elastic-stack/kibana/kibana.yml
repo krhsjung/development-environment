@@ -1,0 +1,36 @@
+# # Kibana configuration for docker target
+# server.host: "localhost"
+# server.publicBaseUrl: "http://localhost:5601/kibana"
+# server.basePath: "/kibana"
+# server.shutdownTimeout: "5s"
+# elasticsearch.homonitoring.ui.container.elasticsearch.enabled: true
+# sts: [ "http://elasticsearch:9200" ]
+
+# # server.port: 5601
+# # server.host: "localhost"
+# # Specifies whether Kibana should rewrite requests that are prefixed with
+# # `server.basePath` or require that they are rewritten by your reverse proxy.
+# # This setting was effectively always `false` before Kibana 6.3 and will
+# # default to `true` starting in Kibana 7.0.
+# server.rewriteBasePath: true
+
+elasticsearch.ssl.certificateAuthorities: /usr/share/kibana/config/certs/ca/ca.crt
+
+server.host: "0.0.0.0"
+server.publicBaseUrl: "https://hsjung.asuscomm.com/kibana"
+server.basePath: "/kibana"
+server.rewriteBasePath: true
+server.ssl.enabled: false  # (Nginx가 SSL 처리 중이면 false)
+
+csp.strict: false
+
+xpack.security.secureCookies: false
+xpack.reporting.roles.enabled: false
+
+# Self Monitoring 표시를 허용하는 옵션 (UI 기능 활성화용)
+xpack.monitoring.ui.container.elasticsearch.enabled: true
+
+# 아래는 kibana에 직접 ssl 설정. nginx proxy를 사용하였기 때문에 주석으로 기록만 함.
+# server.ssl.enabled: true
+# server.ssl.certificate: hsjung.asuscomm.com/cert.pem
+# server.ssl.key: hsjung.asuscomm.com/key.pem
