@@ -1,0 +1,13 @@
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/nginx/hsjung.asuscomm.com/*.log
+
+output.logstash:
+  hosts: ["logstash:5044"]
+  # Logstash TLS 비활성화 시 생략 가능 
+  ssl.certificate_authorities: ["/usr/share/filebeat/certs/ca/ca.crt"]
+
+setup.kibana:
+  host: "kibana:5601"
