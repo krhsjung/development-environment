@@ -1,0 +1,91 @@
+version: "3.8"
+
+networks:
+  default:
+    name: mariadb
+    external: false
+
+services:
+  mariadb-master:
+    image: mariadb:${MARIADB_VERSION}
+    container_name: mariadb-master
+    restart: unless-stopped
+    ports:
+      - ${MARIADB_MASTER_PORT}:3306
+    volumes:
+      - ./master-init:/docker-entrypoint-initdb.d
+      - ${DOCKER_VOLUME_PATH}/mariadb/master:${MARIADB_DATABASE_DIRECTORY}
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_REPLICATION_USER: ${MARIADB_REPLICATION_USER}
+      MARIADB_REPLICATION_PASSWORD: ${MARIADB_REPLICATION_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+    working_dir: ${MARIADB_WORKING_DIRECTORY}
+    command: >
+      --server-id=${MARIADB_MASTER_SERVER_ID}
+      --log-bin=mysql-bin
+      --binlog_format=ROW
+      --binlog_expire_logs_seconds=604800
+      --max_binlog_size=100M
+      --sync_binlog=1
+      --binlog_row_image=FULL
+      --binlog_checksum=CRC32
+      --log-basename=masterdb
+
+  mariadb-slave-1:
+    depends_on:
+      - mariadb-master
+    image: mariadb:${MARIADB_VERSION}
+    container_name: mariadb-slave-1
+    restart: unless-stopped
+    ports:
+      - ${MARIADB_SLAVE_1_PORT}:3306
+    volumes:
+      - ./slave-init:/docker-entrypoint-initdb.d
+      - ${DOCKER_VOLUME_PATH}/mariadb/slave-1:${MARIADB_DATABASE_DIRECTORY}
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_REPLICATION_USER: ${MARIADB_REPLICATION_USER}
+      MARIADB_REPLICATION_PASSWORD: ${MARIADB_REPLICATION_PASSWORD}
+      MARIADB_MASTER_PORT: ${MARIADB_MASTER_PORT}
+    working_dir: ${MARIADB_WORKING_DIRECTORY}
+    command: >
+      --server-id=${MARIADB_SLAVE_1_SERVER_ID}
+      --log-bin=mysql-bin
+      --binlog_format=ROW
+      --binlog_expire_logs_seconds=259200
+      --max_binlog_size=100M
+      --sync_binlog=1
+      --binlog_row_image=FULL
+      --binlog_checksum=CRC32
+      --log-basename=slave1db
+
+  mariadb-slave-2:
+    depends_on:
+      - mariadb-master
+    image: mariadb:${MARIADB_VERSION}
+    container_name: mariadb-slave-2
+    restart: unless-stopped
+    ports:
+      - "${MARIADB_SLAVE_2_PORT}:3306"
+    volumes:
+      - ./slave-init:/docker-entrypoint-initdb.d
+      - ${DOCKER_VOLUME_PATH}/mariadb/slave-2:${MARIADB_WORKING_DIRECTORY}
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_REPLICATION_USER: ${MARIADB_REPLICATION_USER}
+      MARIADB_REPLICATION_PASSWORD: ${MARIADB_REPLICATION_PASSWORD}
+      MARIADB_MASTER_PORT: ${MARIADB_MASTER_PORT}
+    working_dir: ${MARIADB_WORKING_DIRECTORY}
+    command: >
+      --server-id=${MARIADB_SLAVE_2_SERVER_ID}
+      --log-bin=mysql-bin
+      --binlog_format=ROW
+      --binlog_expire_logs_seconds=604800
+      --max_binlog_size=100M
+      --sync_binlog=1
+      --binlog_row_image=FULL
+      --binlog_checksum=CRC32
+      --log-basename=slave2db
