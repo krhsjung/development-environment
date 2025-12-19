@@ -10,6 +10,15 @@ until pg_isready -h "$PRIMARY_HOST" -p "$PRIMARY_PORT" -U "$POSTGRES_REPLICATION
   sleep 2
 done
 
+# Primary 초기화 완료 대기 (POSTGRES_DB 데이터베이스가 생성될 때까지)
+if [ -n "$POSTGRES_DB" ]; then
+  echo "  >> Waiting for database '$POSTGRES_DB' to be created on primary..."
+  until PGPASSWORD="$POSTGRES_REPLICATION_PASSWORD" psql -h "$PRIMARY_HOST" -p "$PRIMARY_PORT" -U "$POSTGRES_REPLICATION_USER" -d "$POSTGRES_DB" -c "SELECT 1" >/dev/null 2>&1; do
+    sleep 2
+  done
+  echo "  >> Database '$POSTGRES_DB' is ready on primary."
+fi
+
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
   echo "  >> Performing basebackup as $POSTGRES_REPLICATION_USER..."
 
