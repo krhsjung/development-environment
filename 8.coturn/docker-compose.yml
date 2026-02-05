@@ -1,0 +1,21 @@
+networks:
+  default:
+    name: coturn
+    # external: false  # 기본값이므로 생략 가능
+
+services:
+  coturn:
+    image: coturn/coturn:${COTURN_VERSION:-4.6}
+    container_name: coturn
+    restart: unless-stopped
+    ports:
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+      - "5349:5349/udp"
+      - "5349:5349/tcp"
+      - "49100-49200:49100-49200/udp"
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+    command: >
+      -c /etc/coturn/turnserver.conf
+      --static-auth-secret=${COTURN_TURN_SECRET}
